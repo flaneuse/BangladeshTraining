@@ -30,6 +30,7 @@ baseline = baseline %>%
 baseline_Adm1 = baseline %>% 
   group_by(DIVISION) %>% 
   summarise(num = n(),
+            meanAs = mean(`As_ug.l`),
             meanAs50ppb = mean(above50ppb),
             std50ppb = sd(above50ppb),
             se50ppb = CI * std50ppb/sqrt(num),
@@ -52,6 +53,7 @@ baseline_Adm1 = rbind(baseline_Adm1, baselineRangpur)
 baseline_Adm2 = baseline %>% 
   group_by(DIVISION, DISTRICT) %>% 
   summarise(num = n(),
+            meanAs = mean(`As_ug.l`),
             meanAs50ppb = mean(above50ppb),
             std50ppb = sd(above50ppb),
             se50ppb = CI * std50ppb/sqrt(num),
@@ -65,7 +67,7 @@ baseline_Adm2 = baseline %>%
 
 
 # Pull in "midline" data --------------------------------------------------------
-source('~/Documents/USAID/Bangladesh/Training/BGD_MICS.R')
+source('~/GitHub/BangladeshTraining/BGD_MICS.R')
 
 
 
@@ -78,6 +80,7 @@ midline_Adm1 = hh %>%
          above10ppb = ifelse(As > 10, 1, 0)) %>% 
   group_by(div) %>% 
   summarise(num = n(),
+            meanAs = mean(As),
             meanAs50ppb = mean(above50ppb),
             std50ppb = sd(above50ppb),
             se50ppb = CI * std50ppb/sqrt(num),
@@ -99,6 +102,7 @@ midline_Adm2 = hh %>%
          above10ppb = ifelse(As > 10, 1, 0)) %>% 
   group_by(div, district) %>% 
   summarise(num = n(),
+            meanAs = mean(As),
             meanAs50ppb = mean(above50ppb),
             std50ppb = sd(above50ppb),
             se50ppb = CI * std50ppb/sqrt(num),
@@ -156,3 +160,8 @@ ggplot(adm2 %>% filter(DIVISION %in% c('Khulna', 'Sylhet', 'Chittagong')),
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(limits = c(1996, 2012),
                      breaks = c(1998, 2012))
+
+
+# save data ---------------------------------------------------------------
+
+write.csv(adm2_mics)

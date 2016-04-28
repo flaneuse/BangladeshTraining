@@ -8,55 +8,60 @@ hh = read_sav('~/Documents/USAID/Bangladesh/Training/Bangladesh_MICS5_Datasets/B
 # ch = removeAttributes(ch)
 # ch_merged = left_join(ch, hh, by = c('HH1', 'HH2'))
 
+districts = data.frame(district = as.character(plyr::mapvalues(hh$HH7A, from = distNames, 
+                                                               to = labels(distNames))))
+
+
 div = data.frame(div = as.character(plyr::mapvalues(ch$HH7, from = c(10, 20, 30, 40, 50, 55, 60), 
                 to = c('Barisal', 'Chittagong',      'Dhaka',     'Khulna',   'Rajshahi',    'Rangpur',     'Sylhet'))))
 
 
-ch = cbind(ch, div, districts)
+# children ----------------------------------------------------------------
+
+
+# ch = cbind(ch, div, districts)
 
 # Stunting by division, sex
-ch = ch %>% 
-  filter(HAZ2 > -10, HAZ2 < 10,
-         HL4 !=9) %>% 
-  mutate(stunted = HAZ2 <= -2) 
+# ch = ch %>% 
+  # filter(HAZ2 > -10, HAZ2 < 10,
+         # HL4 !=9) %>% 
+  # mutate(stunted = HAZ2 <= -2) 
 
-stunting = ch %>% 
-  group_by(div, HL4) %>% 
-  summarise(pctStunted = mean(stunted, na.rm = TRUE), 
-            std = sd(stunted, na.rm = TRUE),
-            num = n(),
-            se = std/sqrt(num)*1.96)
-
-stuntingOrder = stunting %>% 
-  ungroup() %>% 
-  filter(HL4 == 1) %>% 
-  arrange(desc(pctStunted))
-
-stunting$div= factor(stunting$div, levels = stuntingOrder$div)
-
-ch %>% 
-  filter()
-  group_by(AG2) %>% 
-  summarise(n())
-
-ggplot(stunting, aes(x = div, y = pctStunted, 
-                     ymin = pctStunted - se,
-                     ymax = pctStunted + se,
-                     colour = factor(HL4))) +
-  geom_pointrange() +
-facet_wrap(~HL4) +
-  scale_colour_manual(values = c('1' = 'blue', '2' = 'pink')) +
-  theme_ygrid() +
-  scale_y_continuous(limits = c(0, 0.6))+
-  ggtitle('2012/2013 MICS in Bangladesh')
-
+# stunting = ch %>% 
+#   group_by(div, HL4) %>% 
+#   summarise(pctStunted = mean(stunted, na.rm = TRUE), 
+#             std = sd(stunted, na.rm = TRUE),
+#             num = n(),
+#             se = std/sqrt(num)*1.96)
+# 
+# stuntingOrder = stunting %>% 
+#   ungroup() %>% 
+#   filter(HL4 == 1) %>% 
+#   arrange(desc(pctStunted))
+# 
+# stunting$div= factor(stunting$div, levels = stuntingOrder$div)
+# 
+# ch %>% 
+#   filter()
+#   group_by(AG2) %>% 
+#   summarise(n())
+# 
+# ggplot(stunting, aes(x = div, y = pctStunted, 
+#                      ymin = pctStunted - se,
+#                      ymax = pctStunted + se,
+#                      colour = factor(HL4))) +
+#   geom_pointrange() +
+# facet_wrap(~HL4) +
+#   scale_colour_manual(values = c('1' = 'blue', '2' = 'pink')) +
+#   theme_ygrid() +
+#   scale_y_continuous(limits = c(0, 0.6))+
+#   ggtitle('2012/2013 MICS in Bangladesh')
+# 
 
 # Arsenic
 div = data.frame(div = as.character(plyr::mapvalues(hh$HH7, from = c(10, 20, 30, 40, 50, 55, 60), 
                                                     to = c('Barisal', 'Chittagong',      'Dhaka',     'Khulna',   'Rajshahi',    'Rangpur',     'Sylhet'))))
 distNames = attr(hh$HH7A, 'labels')
-districts = data.frame(district = as.character(plyr::mapvalues(hh$HH7A, from = distNames, 
-                                                               to = labels(distNames))))
 
 hh = cbind(hh, div, districts)
 
