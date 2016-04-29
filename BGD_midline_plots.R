@@ -153,6 +153,22 @@ adm1$div = factor(adm1$div,
 
 ggplot(adm2_tidy %>% filter(year %like% '2012'),
        aes(y = meanAs50ppb,
+           x = div, colour = div)) +  
+  geom_point(size = 5, alpha = 0.4, colour = NA) +
+  geom_segment(aes(x = as.numeric(div) - 0.25,
+                   xend = as.numeric(div) + 0.25,
+                   y = meanAs50ppb.y,
+                   yend = meanAs50ppb.y,
+                   colour = div),
+               size = 1.5,
+               data = adm1) +
+  scale_y_continuous(labels = scales::percent, 
+                     limits = c(0, 0.5),
+                     name = '') + 
+  theme_ygrid()
+
+ggplot(adm2_tidy %>% filter(year %like% '2012'),
+       aes(y = meanAs50ppb,
            x = div, colour = div)) +
   geom_point(size = 5, alpha = 0.4) +
   geom_segment(aes(x = as.numeric(div) - 0.25,
@@ -162,7 +178,9 @@ ggplot(adm2_tidy %>% filter(year %like% '2012'),
                    colour = div),
                size = 1.5,
                data = adm1) +
-  scale_y_continuous(labels = scales::percent, name = '') + 
+  scale_y_continuous(labels = scales::percent, 
+                     limits = c(0, 0.5),
+                     name = '') + 
   theme_ygrid()
 
 # 1998
