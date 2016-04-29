@@ -8,6 +8,8 @@ hh = read_sav('~/Documents/USAID/Bangladesh/Training/Bangladesh_MICS5_Datasets/B
 # ch = removeAttributes(ch)
 # ch_merged = left_join(ch, hh, by = c('HH1', 'HH2'))
 
+distNames = attr(hh$HH7A, 'labels')
+
 districts = data.frame(district = as.character(plyr::mapvalues(hh$HH7A, from = distNames, 
                                                                to = labels(distNames))))
 
@@ -61,7 +63,6 @@ div = data.frame(div = as.character(plyr::mapvalues(ch$HH7, from = c(10, 20, 30,
 # Arsenic
 div = data.frame(div = as.character(plyr::mapvalues(hh$HH7, from = c(10, 20, 30, 40, 50, 55, 60), 
                                                     to = c('Barisal', 'Chittagong',      'Dhaka',     'Khulna',   'Rajshahi',    'Rangpur',     'Sylhet'))))
-distNames = attr(hh$HH7A, 'labels')
 
 hh = cbind(hh, div, districts)
 
@@ -101,14 +102,14 @@ ggplot(hh_filtered, aes(x = log10(concAs))) +
   facet_wrap(~div, scales = 'free_y')
 
 # By District
-View(hh %>% 
+hh %>% 
        filter(WQ9 < 9999, !is.na(WQ9)) %>% 
        group_by(div, district, As = WQ9 >= 50) %>% 
        summarise(num = n()) %>% 
        mutate(pct = num / sum(num)) %>% 
        filter(As == TRUE) %>%
        ungroup() %>% 
-       arrange(desc(pct)))
+       arrange(desc(pct))
 
 
 # "Arsenic level (ppb) in source water sample"
@@ -129,8 +130,7 @@ hh %>%
 
 
 # As level at Adm2 --------------------------------------------------------
-
-View(hh %>% 
+hh %>% 
        filter(WQ9 < 9999, !is.na(WQ9),
               div %in% c('Sylhet')) %>% 
        group_by(HH7A, As = WQ9 >= 50) %>% 
@@ -138,10 +138,10 @@ View(hh %>%
        mutate(pct = num / sum(num)) %>% 
        filter(As == TRUE) %>%
        ungroup() %>% 
-       arrange(desc(pct)))
+       arrange(desc(pct))
 
 
-View(hh %>% 
+hh %>% 
        filter(WQ9 < 9999, !is.na(WQ9),
               div %in% c('Chittagong')) %>% 
        group_by(HH7A, As = WQ9 >= 50) %>% 
@@ -149,9 +149,9 @@ View(hh %>%
        mutate(pct = num / sum(num)) %>% 
        filter(As == TRUE) %>%
        ungroup() %>% 
-       arrange(desc(pct)))
+       arrange(desc(pct))
 
-View(hh %>% 
+hh %>% 
        filter(WQ9 < 9999, !is.na(WQ9),
               div %in% c('Khulna')) %>% 
        group_by(HH7A, As = WQ9 >= 50) %>% 
@@ -159,7 +159,7 @@ View(hh %>%
        mutate(pct = num / sum(num)) %>% 
        filter(As == TRUE) %>%
        ungroup() %>% 
-       arrange(desc(pct)))
+       arrange(desc(pct))
 
 
 # Adm2 levels -------------------------------------------------------------
@@ -195,8 +195,9 @@ ggplot(infMort, aes(x = year, y = firstQuarter, group = cause)) +
   facet_wrap(~cause)+
   theme_xygrid()
 
-infMort$cause = factor(infMort$cause, 
-                           levels = orderRate$cause)
+
+# infMort$cause = factor(infMort$cause, 
+                           # levels = orderRate$cause)
 
 # Proportion of deaths for children under 5
 ggplot(infMort, aes(x = year, y = year5, group = cause)) +
