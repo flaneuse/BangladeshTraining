@@ -148,6 +148,9 @@ order4 = adm1_tidy %>%
 adm2_tidy$div = factor(adm2_tidy$div,
                        levels = order4$div)
 
+adm1$div = factor(adm1$div,
+                       levels = order4$div)
+
 ggplot(adm2_tidy %>% filter(year %like% '2012'),
        aes(y = meanAs50ppb,
            x = div, colour = div)) +
@@ -163,6 +166,17 @@ ggplot(adm2_tidy %>% filter(year %like% '2012'),
   theme_ygrid()
 
 # 1998
+
+order5 = adm1_tidy %>% 
+  filter(year == '1998/1999') %>% 
+  arrange(desc(meanAs50ppb))
+
+adm2_tidy$div = factor(adm2_tidy$div,
+                       levels = order5$div)
+adm1$div = factor(adm1$div,
+                  levels = order5$div)
+
+
 ggplot(adm2_tidy %>% filter(year %like% '1998'),
        aes(y = meanAs50ppb,
            x = div, colour = div)) +
