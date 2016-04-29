@@ -37,6 +37,34 @@ ggplot(adm1, aes(x = div, xend = div,
   theme_ygrid()
 
 
+# plot: change [As] as arrows: Adm2 ---------------------------------------------
+order3 = adm2 %>% 
+  arrange(desc(meanAs50ppb.y))
+
+adm2$district = factor(adm2$district, 
+                  levels = order3$district)
+
+
+ggplot(adm2 %>% filter(div %in% c('Chittagong', 'Dhaka', 'Sylhet')), aes(x = district, xend = district,
+                 y = meanAs50ppb.x, yend = meanAs50ppb.y,
+                 colour = meanAs50ppb.y)) +
+  geom_segment(arrow = arrow(length = unit(0.25,"cm"))) +
+  geom_point(size = 1.5) +
+  # geom_label(aes(label = '1998/\n 1999'),
+             # nudge_x = 0.35,
+             # label.size = 0,
+             # data = adm2 %>% filter(div == 'Khulna')) +
+  # geom_label(aes(label = '2012/ \n2013',
+                 # y = meanAs50ppb.y),
+             # label.size = 0,
+             # nudge_x = 0.35,
+             # data = adm2 %>% filter(div == 'Khulna')) +
+  facet_wrap(~div, scales = 'free_x') +
+  scale_colour_gradientn(colours = brewer.pal(9, 'Oranges')[4:9]) +
+  scale_y_continuous(labels = scales::percent, name = '') + 
+  ggtitle('Households with contaminated drinking water decreased in 2012/2013') +
+  theme_ygrid()
+
 
 # bump chart --------------------------------------------------------------
 
@@ -63,3 +91,44 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(limits = c(1998, 2014),
                      breaks = c(1998, 2012))
+
+
+# [As] vs. contaminated ---------------------------------------------------
+
+ggplot(adm2_tidy %>% filter(year %like% '2012'), 
+       aes(x = meanAs,  y = meanAs50ppb,
+           colour = div, shape = year)) +
+  annotate(geom = 'rect', xmin = 50, xmax = 150,
+           ymin = 0, ymax = 0.5, fill = grey30K, alpha = 0.2) +
+  geom_point(size = 3, alpha = 0.7) +
+  theme_basic()
+
+
+# 10 ppb v 50 ppb ---------------------------------------------------------
+
+ggplot(adm2_tidy %>% filter(year %like% '2012'), 
+       aes(x = meanAs10ppb,  y = meanAs50ppb,
+           colour = div, shape = year)) +
+  geom_abline(slope = 1, intercept = 0, 
+              size = 0.25,
+              colour = grey75K) +
+  geom_point(size = 3, alpha = 0.7) +
+  theme_xygridlight() +
+  coord_equal()
+
+
+
+# heatmap -----------------------------------------------------------------
+order2 = adm2_tidy %>% 
+  arrange(meanAs50ppb)
+
+adm2_tidy$district = factor(adm2_tidy$district,
+                            levels = order2$district)
+  
+ggplot(adm2_tidy, aes(y = district, 
+                     x = year, 
+                     fill = meanAs50ppb)) +
+  geom_tile() +
+  facet_wrap(~div, scales = 'free_y') +
+  scale_fill_gradientn(colours = brewer.pal(9, 'Oranges')) +
+  theme_labelsOnly()
