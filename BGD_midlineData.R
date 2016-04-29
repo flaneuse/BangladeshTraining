@@ -129,29 +129,6 @@ midline_Adm2 = hh %>%
 adm1 = full_join(baseline_Adm1, midline_Adm1, 
                  by = c("div" = "div"))
 
-ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb.y,
-                 colour = div, fill = div, label = div)) +
-  geom_segment(data = adm1 %>% filter(!div %in% c('Rangpur', 'Rajshahi'))) +
-  geom_segment(linetype = 2,
-               colour = '#B983FF',
-               data = adm1 %>% filter(div %in% c('Rangpur', 'Rajshahi'))) +
-  geom_point(size = 3,             
-             shape = 21,
-             colour= grey90K) +
-  geom_segment(aes(x = 1998, xend = 1998, y = lb50ppb.x, yend = ub50ppb.x),
-               alpha = 0.4, size = 1.5) +
-  geom_segment(aes(x = 2012, xend = 2012, y = lb50ppb.y, yend = ub50ppb.y),
-               alpha = 0.4, size = 1.5) +
-  geom_point(aes(y = meanAs50ppb.x, x = 1998), 
-             colour= grey90K,
-             shape = 21,
-             size = 3) +
-  geom_label(nudge_x = 1, label.size = 0, fill = 'white',
-             family = 'Segoe UI Semilight', size = 4.5) + 
-  theme_ygrid() +
-  scale_y_continuous(labels = scales::percent) +
-  scale_x_continuous(limits = c(1998, 2014),
-                     breaks = c(1998, 2012))
 
 # Merge baseline and midline together -------------------------------------
 adm2 = full_join(baseline_Adm2, midline_Adm2, 
