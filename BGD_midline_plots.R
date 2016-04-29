@@ -132,3 +132,47 @@ ggplot(adm2_tidy, aes(y = district,
   facet_wrap(~div, scales = 'free_y') +
   scale_fill_gradientn(colours = brewer.pal(9, 'Oranges')) +
   theme_labelsOnly()
+
+# hist
+ggplot(adm2_tidy %>% filter(year %like% '2012'),
+       aes(x = meanAs50ppb)) +
+  geom_histogram(binwidth = 0.15) +
+  facet_wrap(~div) +
+  theme_ygrid()
+
+# distribution among districts --------------------------------------------
+order4 = adm1_tidy %>% 
+  filter(year == '2012/2013') %>% 
+  arrange(desc(meanAs50ppb))
+
+adm2_tidy$div = factor(adm2_tidy$div,
+                       levels = order4$div)
+
+ggplot(adm2_tidy %>% filter(year %like% '2012'),
+       aes(y = meanAs50ppb,
+           x = div, colour = div)) +
+  geom_point(size = 5, alpha = 0.4) +
+  geom_segment(aes(x = as.numeric(div) - 0.25,
+                   xend = as.numeric(div) + 0.25,
+                   y = meanAs50ppb.y,
+                   yend = meanAs50ppb.y,
+                   colour = div),
+               size = 1.5,
+               data = adm1) +
+  scale_y_continuous(labels = scales::percent, name = '') + 
+  theme_ygrid()
+
+# 1998
+ggplot(adm2_tidy %>% filter(year %like% '1998'),
+       aes(y = meanAs50ppb,
+           x = div, colour = div)) +
+  geom_point(size = 5, alpha = 0.4) +
+  geom_segment(aes(x = as.numeric(div) - 0.25,
+                   xend = as.numeric(div) + 0.25,
+                   y = meanAs50ppb.x,
+                   yend = meanAs50ppb.x,
+                   colour = div),
+               size = 1.5,
+               data = adm1) +
+  scale_y_continuous(labels = scales::percent, name = '') + 
+  theme_ygrid()
