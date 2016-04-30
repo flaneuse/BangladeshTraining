@@ -38,7 +38,7 @@ bgDHS = subnatl %>%
 
 bgDHS2 = subnatl %>% 
   filter(
-         !(CharacteristicLabel %in% c('Chittagong/Sylhet', 'Rajshahi/Rangpur'))) # Removing old groupings of areas
+         !(CharacteristicLabel %in% c('Chittagong/Sylhet'))) # Removing old groupings of areas
 
 
 # Mortality rates -------------------------------------------------------------
@@ -107,3 +107,35 @@ bgStunted = bgDHS2 %>%
          CharacteristicCategory == 'Region') # Weighted # children in the last 5 y.
 
 write.csv(bgStunted, '~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunting2014.csv')
+
+
+ggplot(bgStunted, aes(x = SurveyYear, y = Value, 
+                      group = CharacteristicLabel,
+                      label = CharacteristicLabel)) +
+  geom_line(colour = grey40K) +
+  geom_point(colour = grey60K,
+            size = 2,
+            data = bgStunted %>% filter(SurveyYear == 2014)) +
+  geom_point(colour = 'red',
+             size = 2,
+             data = bgStunted %>% filter(SurveyYear == 2014,
+                                         CharacteristicLabel == '..Sylhet')) +
+  geom_text(colour = grey60K,
+            family = 'Segoe UI Light', 
+            size = 4,
+            nudge_x = 0.2,
+            hjust = 0,
+            data = bgStunted %>% filter(SurveyYear == 2014)) +
+
+  geom_text(colour = 'red',
+            family = 'Segoe UI Light', 
+            size = 4,
+            nudge_x = 0.2,
+            hjust = 0,
+            data = bgStunted %>% filter(SurveyYear == 2014,
+                                        CharacteristicLabel == '..Sylhet')) +
+  geom_line(colour = 'red',
+            data = bgStunted %>% filter(CharacteristicLabel == '..Sylhet')) +
+  theme_xygridlight() +
+  coord_cartesian(xlim = c(2004, 2016)) +
+  ggtitle('Stunting in Sylhet has increased in the past 5 years')
