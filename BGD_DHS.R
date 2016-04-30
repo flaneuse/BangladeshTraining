@@ -18,7 +18,7 @@ indicator = c('CM_ECMT_C_NNR',
 
 
 countries = 'BD'
-years = paste0(seq(2009,2015), collapse = ',')
+years = paste0(seq(1998,2015), collapse = ',')
 
 subnatl = NULL
 
@@ -34,7 +34,12 @@ for (i in seq_along(indicator)) {
 bgDHS = subnatl %>% 
   filter(SurveyYear == 2014,
          !(CharacteristicLabel %in% c('Chittagong/Sylhet', 'Rajshahi/Rangpur'))) # Removing old groupings of areas
-  
+
+
+bgDHS2 = subnatl %>% 
+  filter(
+         !(CharacteristicLabel %in% c('Chittagong/Sylhet', 'Rajshahi/Rangpur'))) # Removing old groupings of areas
+
 
 # Mortality rates -------------------------------------------------------------
 bgFiltered = bgDHS %>% 
@@ -97,7 +102,7 @@ kable(bgFiltered %>%
 
 
 # Stunting ----------------------------------------------------------------
-bgStunted = bgDHS %>% 
+bgStunted = bgDHS2 %>% 
   filter(IndicatorId %in% c('CN_NUTS_C_HA2'),
          CharacteristicCategory == 'Region') # Weighted # children in the last 5 y.
 
