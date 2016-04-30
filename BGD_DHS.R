@@ -3,6 +3,7 @@
 
 apiKey = 'USAAID-405632'
 indicator = c('CM_ECMT_C_NNR',
+              'CN_NUTS_C_HA2',
 'CM_ECMT_C_PNR',
 'CM_HRFB_C_NON','CM_HRFB_C_FOB',
 'CM_HRFB_C_A18','CM_HRFB_C_A34',
@@ -72,7 +73,7 @@ bgFiltered = bgDHS %>%
 kable(bgFiltered %>% 
         group_by(CharacteristicCategory) %>% 
         select(CharacteristicCategory, CharacteristicLabel, Value) %>% 
-        arrange(desc(Value))) %>% %>% %>% %>% %>% 
+        arrange(desc(Value))) 
 
 bgFiltered = bgDHS %>% 
   filter(IndicatorId %in% c('CM_HRFB_C_NON', 'CM_HRFB_C_B24', 'CM_HRFB_C_A34'), # high-risk birhts
@@ -93,3 +94,11 @@ kable(bgFiltered %>%
   group_by(Indicator) %>% 
   select(Indicator, CharacteristicLabel, Value) %>% 
   arrange(desc(Value)))
+
+
+# Stunting ----------------------------------------------------------------
+bgStunted = bgDHS %>% 
+  filter(IndicatorId %in% c('CN_NUTS_C_HA2'),
+         CharacteristicCategory == 'Region') # Weighted # children in the last 5 y.
+
+write.csv(bgStunted, '~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunting2014.csv')
