@@ -7,6 +7,31 @@ source('BGD_midlineData.R')
 adm1 = adm1 %>% 
   mutate(chgAs50 = meanAs50ppb.y - meanAs50ppb.x)
 
+# Merge in pop data
+source('BGD_population.R')
+
+pop2011 = pop %>% filter(year == 2011)
+
+adm1 = left_join(adm1, pop2011, by = 'div')
+
+
+# Merge in stunting data
+bgStunted = read.csv('~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunting2014.csv') %>% 
+  filter(SurveyYear == 2011,
+         CharacteristicLabel != 'Rajshahi/Rangpur') %>% 
+  mutate(Value = Value /100,
+         CharacteristicLabel = as.character(CharacteristicLabel),
+         CharacteristicLabel = ifelse(str_detect(CharacteristicLabel, '\\.'),
+                                      str_replace_all(CharacteristicLabel, '\\.', ''),
+                                      CharacteristicLabel)) %>% 
+  select(div = CharacteristicLabel,
+         stunting = Value,
+         stuntingYr = SurveyYear,
+         denomStunted = DenominatorUnweighted)
+
+
+adm1 = left_join(adm1, bgStunted, by = 'div')
+
 
 # plot: change [As] as arrows ---------------------------------------------
 order1 = adm1 %>% 
@@ -42,23 +67,23 @@ order3 = adm2 %>%
   arrange(desc(meanAs50ppb.y))
 
 adm2$district = factor(adm2$district, 
-                  levels = order3$district)
+                       levels = order3$district)
 
 
 ggplot(adm2 %>% filter(div %in% c('Chittagong', 'Dhaka', 'Sylhet')), aes(x = district, xend = district,
-                 y = meanAs50ppb.x, yend = meanAs50ppb.y,
-                 colour = meanAs50ppb.y)) +
+                                                                         y = meanAs50ppb.x, yend = meanAs50ppb.y,
+                                                                         colour = meanAs50ppb.y)) +
   geom_segment(arrow = arrow(length = unit(0.25,"cm"))) +
   geom_point(size = 1.5) +
   # geom_label(aes(label = '1998/\n 1999'),
-             # nudge_x = 0.35,
-             # label.size = 0,
-             # data = adm2 %>% filter(div == 'Khulna')) +
+  # nudge_x = 0.35,
+  # label.size = 0,
+  # data = adm2 %>% filter(div == 'Khulna')) +
   # geom_label(aes(label = '2012/ \n2013',
-                 # y = meanAs50ppb.y),
-             # label.size = 0,
-             # nudge_x = 0.35,
-             # data = adm2 %>% filter(div == 'Khulna')) +
+  # y = meanAs50ppb.y),
+  # label.size = 0,
+  # nudge_x = 0.35,
+  # data = adm2 %>% filter(div == 'Khulna')) +
   facet_wrap(~div, scales = 'free_x') +
   scale_colour_gradientn(colours = brewer.pal(9, 'Oranges')[4:9]) +
   scale_y_continuous(labels = scales::percent, name = '') + 
@@ -124,10 +149,10 @@ order2 = adm2_tidy %>%
 
 adm2_tidy$district = factor(adm2_tidy$district,
                             levels = order2$district)
-  
+
 ggplot(adm2_tidy, aes(y = district, 
-                     x = year, 
-                     fill = meanAs50ppb)) +
+                      x = year, 
+                      fill = meanAs50ppb)) +
   geom_tile() +
   facet_wrap(~div, scales = 'free_y') +
   scale_fill_gradientn(colours = brewer.pal(9, 'Oranges')) +
@@ -149,7 +174,7 @@ adm2_tidy$div = factor(adm2_tidy$div,
                        levels = order4$div)
 
 adm1$div = factor(adm1$div,
-                       levels = order4$div)
+                  levels = order4$div)
 
 ggplot(adm2_tidy %>% filter(year %like% '2012'),
        aes(y = meanAs50ppb,
@@ -208,3 +233,21 @@ ggplot(adm2_tidy %>% filter(year %like% '1998'),
                data = adm1) +
   scale_y_continuous(labels = scales::percent, name = '') + 
   theme_ygrid()
+
+
+# Scatter: stunting, As, pop ----------------------------------------------
+
+ggplot(adm1, aes(x = meanAs50ppb.y, 
+                 y = stunting, 
+                 size = population, 
+                 colour = population,
+                 label = div)) +
+  geom_point() +
+  geom_text(family = 'Segoe UI Semilight',
+            size = 3, 
+            nudge_x = 0.02,
+            nudge_y =  0.02) +
+  scale_colour_gradientn(colours = brewer.pal(9, 'RdPu')[5:9]) +
+  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent) +
+  theme_xygrid()
