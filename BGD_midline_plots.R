@@ -273,15 +273,68 @@ ggplot(adm1, aes(x = meanAs50ppb.y,
 
 
 # heatmap -----------------------------------------------------------------
+adm1_long = adm1 %>% 
+  select(`As > 50ppb` = meanAs50ppb.y, 
+         `As > 10ppb` = meanAs10ppb.y, 
+         stunting, 
+         div) %>% 
+  gather(indicator, pct, -div) %>% 
+  mutate(colourVal = ifelse(pct > mean(pct),
+                            'white', grey90K))
 
+orderHeat = adm1_long %>% 
+  filter(indicator == 'As > 10ppb') %>% 
+  arrange(desc(pct))
+
+adm1_long$div = factor(adm1_long$div,
+                       levels = orderHeat$div)
+
+
+adm1_long$indicator = factor(adm1_long$indicator,
+                       levels = rev(c('As > 10ppb',
+                                  'As > 50ppb','stunting')))
+
+ggplot(adm1_long, aes(fill = pct, 
+                      x = div,
+                      y = indicator,
+                      label = percent(pct, 0),
+                      colour = colourVal)) +
+  scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu')) +
+  geom_tile(colour = 'white', size = 0.5) +
+  geom_text(size = 6, family = 'Segoe UI') +
+  scale_color_identity() +
+  theme_xylab()
+
+
+adm1$div = factor(adm1$div,
+                       levels = orderHeat$div)
+
+ggplot(adm1, aes(fill = population, 
+                      x = div,
+                      y = 1,
+                      label = paste0(round(population/1e6,1), ' M'))) +
+  scale_fill_gradient(low = grey25K, high = grey90K) +
+  geom_tile(colour = 'white', size = 0.5) +
+  geom_text(size = 6, family = 'Segoe UI') +
+  scale_color_identity() +
+  theme_xylab()
 
 # money plots -------------------------------------------------------------
 
 ggplot(adm1, aes(x = `total funding`, y = chgAs50)) +
-  geom_point()
+  geom_smooth(method='lm',formula=y~x, 
+              colour = 'dodgerblue', linetype = 2) + 
+  geom_point(size = 5) +
+  theme_xygridlight()
 
 ggplot(adm1, aes(x = funding_community_treatment, y = chgAs50)) +
-  geom_point()
+  geom_smooth(method='lm',formula=y~x, 
+              colour = 'dodgerblue', linetype = 2) + 
+  geom_point(size = 5) +
+  theme_xygridlight()
 
 ggplot(adm1, aes(x = funding_filtration, y = chgAs50)) +
-  geom_point()
+  geom_smooth(method='lm',formula=y~x, 
+              colour = 'dodgerblue', linetype = 2) + 
+  geom_point(size = 5) +
+  theme_xygridlight()
