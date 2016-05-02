@@ -1,7 +1,7 @@
 library(llamar)
 loadPkgs()
 
-# Plots for midline data --------------------------------------------------
+# Import midline data --------------------------------------------------
 source('BGD_midlineData.R')
 
 adm1 = adm1 %>% 
@@ -29,8 +29,17 @@ bgStunted = read.csv('~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunt
          stuntingYr = SurveyYear,
          denomStunted = DenominatorUnweighted)
 
+# fake money data
+money = read_excel('~/GitHub/BangladeshTraining/BGD_midlinedata.xlsx',
+                   sheet = 1) %>% 
+  filter(division != 'All Bangladesh')
 
 adm1 = left_join(adm1, bgStunted, by = 'div')
+
+
+adm1_tidy = left_join(adm1_tidy, bgStunted, by = 'div')
+adm1_tidy = left_join(adm1_tidy, pop, by = 'div')
+adm1_tidy = left_join(adm1_tidy, money, by = c('div' = 'division'))
 
 
 # plot: change [As] as arrows ---------------------------------------------
@@ -244,10 +253,15 @@ ggplot(adm1, aes(x = meanAs50ppb.y,
                  label = div)) +
   geom_point() +
   geom_text(family = 'Segoe UI Semilight',
-            size = 3, 
-            nudge_x = 0.02,
+            size = 6, 
+            nudge_x = 0.025,
             nudge_y =  0.02) +
-  scale_colour_gradientn(colours = brewer.pal(9, 'RdPu')[5:9]) +
-  scale_x_continuous(labels = scales::percent) +
-  scale_y_continuous(labels = scales::percent) +
-  theme_xygrid()
+  scale_colour_gradientn(colours = brewer.pal(9, 'PuRd')[5:9]) +
+  scale_x_continuous(labels = scales::percent,
+                     name = 'households with arsenic-contaminated drinking water') +
+  scale_y_continuous(labels = scales::percent, 
+                     name = 'stunted children',
+                     limits = c(0, 0.52)) +
+  scale_size(range = c(3, 20)) +
+  theme_xygridlight() +
+  ggtitle('2011 - 2013 data')
