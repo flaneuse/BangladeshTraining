@@ -13,6 +13,7 @@ source('BGD_population.R')
 pop2011 = pop %>% filter(year == 2011)
 
 adm1 = left_join(adm1, pop2011, by = 'div')
+adm1_tidy = left_join(adm1_tidy, pop2011 %>% rename(yearPop = year), by = 'div')
 
 
 # Merge in stunting data
@@ -32,13 +33,17 @@ bgStunted = read.csv('~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunt
 # fake money data
 money = read_excel('~/GitHub/BangladeshTraining/BGD_midlinedata.xlsx',
                    sheet = 1) %>% 
-  filter(division != 'All Bangladesh')
+  filter(division != 'All Bangladesh') %>% 
+  filter(year =='1998/1999') %>% 
+  select(division, contains('funding'))
 
 adm1 = left_join(adm1, bgStunted, by = 'div')
 
 
 adm1_tidy = left_join(adm1_tidy, bgStunted, by = 'div')
-adm1_tidy = left_join(adm1_tidy, pop, by = 'div')
+
+# Merge in money
+adm1 = left_join(adm1, money, by = c('div' = 'division'))
 adm1_tidy = left_join(adm1_tidy, money, by = c('div' = 'division'))
 
 
@@ -265,3 +270,18 @@ ggplot(adm1, aes(x = meanAs50ppb.y,
   scale_size(range = c(3, 20)) +
   theme_xygridlight() +
   ggtitle('2011 - 2013 data')
+
+
+# heatmap -----------------------------------------------------------------
+
+
+# money plots -------------------------------------------------------------
+
+ggplot(adm1, aes(x = `total funding`, y = chgAs50)) +
+  geom_point()
+
+ggplot(adm1, aes(x = funding_community_treatment, y = chgAs50)) +
+  geom_point()
+
+ggplot(adm1, aes(x = funding_filtration, y = chgAs50)) +
+  geom_point()
