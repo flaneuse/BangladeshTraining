@@ -2,7 +2,7 @@ library(llamar)
 loadPkgs()
 
 # Import midline data --------------------------------------------------
-source('BGD_midlineData.R')
+source('~/GitHub/BangladeshTraining/BGD_midlineData.R')
 
 adm1 = adm1 %>% 
   mutate(chgAs50 = meanAs50ppb.y - meanAs50ppb.x)
