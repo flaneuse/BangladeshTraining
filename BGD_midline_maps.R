@@ -5,10 +5,17 @@ adm2_map = shp2csv(workingDir = '~/Documents/USAID/Bangladesh/Training/BGD_Adm2/
                labelVar = 'District',
                exportData = FALSE)
 
+adm1_map = shp2csv(workingDir = '~/Documents/USAID/Bangladesh/Training/BGD_Adm1/',
+                   layerName = 'DivisionA',
+                   labelVar = 'Division',
+                   exportData = FALSE)
+
 # Pull out the lat/lon data
 adm2_df = adm2_map$df
+adm1_df = adm1_map$df
 
 adm2_centroids = adm2_map$centroids
+adm1_centroids = adm1_map$centroids
 
 
 # clean names in the Districts --------------------------------------------
@@ -41,19 +48,28 @@ adm2_df = left_join(adm2_baseline, midline_Adm2 %>% select(-div),
   mutate(chgAs50 = meanAs50ppb.y - meanAs50ppb.x)
 
 
-# plot map ----------------------------------------------------------------
+# midline map  (50 ppb) ----------------------------------------------------------------
 colPal = 'OrRd'
 
 p = ggplot(adm2_midline, aes(x = long, 
-                   y = lat, 
-                   group = group, 
-                   fill = meanAs50ppb)) +
-  geom_polygon() +
+                              y = lat)) +
+  geom_polygon(aes(fill = meanAs50ppb, 
+                   group = group)) +
+  geom_path(aes(group = group),
+            colour = grey90K,
+            data = adm1_df, size = 0.2) +
+  geom_text(aes(label = label),
+            colour = grey90K,
+            data = adm1_centroids, size = 4) +
   theme_void() + 
   coord_equal() +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
+                       na.value = grey25K,
+                       labels = scales::percent,
                        limits = c(0, 0.95)) +
-  theme(legend.position = 'none')
+  guides(fill = guide_colorbar(ticks = FALSE)) +
+  ggtitle('Percent of households with contaminated drinking water (2012/2013)')
+
 
 fileName = '~/Documents/USAID/Bangladesh/Training/Training docs/BGD_midlineAs_choro.pdf'
 plotWidth = 5
@@ -69,16 +85,28 @@ ggsave(filename = fileName,
        dpi = 300)
 
 
+# midline (10 ppb) --------------------------------------------------------
+
 p = ggplot(adm2_midline, aes(x = long, 
-                             y = lat, 
-                             group = group, 
-                             fill = meanAs10ppb)) +
-  geom_polygon() +
+                             y = lat)) +
+  geom_polygon(aes(fill = meanAs10ppb, 
+                   group = group)) +
+  geom_path(aes(group = group),
+            colour = grey90K,
+            data = adm1_df, size = 0.2) +
+  geom_text(aes(label = label),
+            colour = grey90K,
+            data = adm1_centroids, size = 4) +
   theme_void() + 
   coord_equal() +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
+                       na.value = grey25K,
+                       labels = scales::percent,
                        limits = c(0, 0.95)) +
-  theme(legend.position = 'none')
+  guides(fill = guide_colorbar(ticks = FALSE)) +
+  ggtitle('Percent of households with contaminated drinking water (2012/2013)')
+
+
 
 fileName = '~/Documents/USAID/Bangladesh/Training/Training docs/BGD_midlineAs10ppb_choro.pdf'
 plotWidth = 5
@@ -94,16 +122,28 @@ ggsave(filename = fileName,
        dpi = 300)
 
 
+# midline (mean As) -------------------------------------------------------
+
+
 p = ggplot(adm2_midline, aes(x = long, 
-                             y = lat, 
-                             group = group, 
-                             fill = meanAs)) +
-  geom_polygon() +
+                             y = lat)) +
+  geom_polygon(aes(fill = meanAs, 
+                   group = group)) +
+  geom_path(aes(group = group),
+            colour = grey90K,
+            data = adm1_df, size = 0.2) +
+  geom_text(aes(label = label),
+            colour = grey90K,
+            data = adm1_centroids, size = 4) +
   theme_void() + 
   coord_equal() +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
+                       na.value = grey25K,
                        limits = c(0, 375)) +
-  theme()
+  guides(fill = guide_colorbar(ticks = FALSE)) +
+  ggtitle('Percent of households with contaminated drinking water (2012/2013)')
+
+
 
 fileName = '~/Documents/USAID/Bangladesh/Training/Training docs/BGD_midlineAsmean_choro.pdf'
 plotWidth = 5
@@ -118,18 +158,26 @@ ggsave(filename = fileName,
        compress = FALSE,
        dpi = 300)
 
-# baseline map ------------------------------------------------------------
+# baseline map (50 ppb) ------------------------------------------------------------
 
 p = ggplot(adm2_baseline, aes(x = long, 
-                        y = lat, 
-                        group = group, 
-                        fill = meanAs50ppb)) +
-  geom_polygon() +
+                        y = lat)) +
+  geom_polygon(aes(fill = meanAs50ppb, 
+                   group = group)) +
+  geom_path(aes(group = group),
+            colour = grey90K,
+            data = adm1_df, size = 0.2) +
+  geom_text(aes(label = label),
+            colour = grey90K,
+            data = adm1_centroids, size = 4) +
   theme_void() + 
   coord_equal() +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
+                       na.value = grey25K,
+                       labels = scales::percent,
                        limits = c(0, 0.95)) +
-  theme(legend.position = 'none')
+  guides(fill = guide_colorbar(ticks = FALSE)) +
+  ggtitle('Percent of households with contaminated drinking water (1998/1999)')
 
 fileName = '~/Documents/USAID/Bangladesh/Training/Training docs/BGD_baselineAs_choro.pdf'
 plotWidth = 5
@@ -145,16 +193,26 @@ ggsave(filename = fileName,
        dpi = 300)
 
 
+# baseline (10ppb) --------------------------------------------------------
+
 p = ggplot(adm2_baseline, aes(x = long, 
-                              y = lat, 
-                              group = group, 
-                              fill = meanAs10ppb)) +
-  geom_polygon() +
+                              y = lat)) +
+  geom_polygon(aes(fill = meanAs10ppb, 
+                   group = group)) +
+  geom_path(aes(group = group),
+            colour = grey90K,
+            data = adm1_df, size = 0.2) +
+  geom_text(aes(label = label),
+            colour = grey90K,
+            data = adm1_centroids, size = 4) +
   theme_void() + 
   coord_equal() +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
+                       na.value = grey25K,
+                       labels = scales::percent,
                        limits = c(0, 0.95)) +
-  theme(legend.position = 'none')
+  guides(fill = guide_colorbar(ticks = FALSE)) +
+  ggtitle('Percent of households with contaminated drinking water (1998/1999)')
 
 fileName = '~/Documents/USAID/Bangladesh/Training/Training docs/BGD_baselineAs10ppb_choro.pdf'
 plotWidth = 5
@@ -169,16 +227,26 @@ ggsave(filename = fileName,
        compress = FALSE,
        dpi = 300)
 
+
+# baseline (mean As) ------------------------------------------------------
+
 p = ggplot(adm2_baseline, aes(x = long, 
-                              y = lat, 
-                              group = group, 
-                              fill = meanAs)) +
-  geom_polygon() +
+                              y = lat)) +
+  geom_polygon(aes(fill = meanAs, 
+                   group = group)) +
+  geom_path(aes(group = group),
+            colour = grey90K,
+            data = adm1_df, size = 0.2) +
+  geom_text(aes(label = label),
+            colour = grey90K,
+            data = adm1_centroids, size = 4) +
   theme_void() + 
   coord_equal() +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
+                       na.value = grey25K,
                        limits = c(0, 375)) +
-  theme()
+  guides(fill = guide_colorbar(ticks = FALSE)) +
+  ggtitle('Percent of households with contaminated drinking water (1998/1999)')
 
 fileName = '~/Documents/USAID/Bangladesh/Training/Training docs/BGD_baselinemeanAs_choro.pdf'
 plotWidth = 5
