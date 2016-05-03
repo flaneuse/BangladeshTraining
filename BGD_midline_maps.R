@@ -62,7 +62,7 @@ p = ggplot(adm2_midline, aes(x = long,
             colour = grey90K,
             data = adm1_centroids, size = 4) +
   theme_void() + 
-  coord_equal() +
+  coord_equal() + theme(legend.direction = 'horizontal') +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
                        na.value = grey25K,
                        labels = scales::percent,
@@ -98,7 +98,7 @@ p = ggplot(adm2_midline, aes(x = long,
             colour = grey90K,
             data = adm1_centroids, size = 4) +
   theme_void() + 
-  coord_equal() +
+  coord_equal() + theme(legend.direction = 'horizontal') +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
                        na.value = grey25K,
                        labels = scales::percent,
@@ -136,7 +136,7 @@ p = ggplot(adm2_midline, aes(x = long,
             colour = grey90K,
             data = adm1_centroids, size = 4) +
   theme_void() + 
-  coord_equal() +
+  coord_equal() + theme(legend.direction = 'horizontal') +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
                        na.value = grey25K,
                        limits = c(0, 375)) +
@@ -171,7 +171,7 @@ p = ggplot(adm2_baseline, aes(x = long,
             colour = grey90K,
             data = adm1_centroids, size = 4) +
   theme_void() + 
-  coord_equal() +
+  coord_equal() + theme(legend.direction = 'horizontal') +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
                        na.value = grey25K,
                        labels = scales::percent,
@@ -206,7 +206,7 @@ p = ggplot(adm2_baseline, aes(x = long,
             colour = grey90K,
             data = adm1_centroids, size = 4) +
   theme_void() + 
-  coord_equal() +
+  coord_equal() + theme(legend.direction = 'horizontal') +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
                        na.value = grey25K,
                        labels = scales::percent,
@@ -241,7 +241,7 @@ p = ggplot(adm2_baseline, aes(x = long,
             colour = grey90K,
             data = adm1_centroids, size = 4) +
   theme_void() + 
-  coord_equal() +
+  coord_equal() + theme(legend.direction = 'horizontal') +
   scale_fill_gradientn(colours = brewer.pal(9, colPal),
                        na.value = grey25K,
                        limits = c(0, 375)) +
@@ -264,15 +264,27 @@ ggsave(filename = fileName,
 # change ------------------------------------------------------------------
 
 p = ggplot(adm2_df, aes(x = long, 
-                        y = lat, 
-                        group = group, 
-                        fill = chgAs50)) +
-  geom_polygon() +
+                        y = lat)) +
+  geom_polygon(aes(fill = chgAs50, 
+                   group = group)) +
+  geom_path(aes(group = group),
+            colour = grey90K,
+            data = adm1_df, size = 0.2) +
+  geom_text(aes(label = label),
+            colour = grey90K,
+            data = adm1_centroids, size = 4) +
   theme_void() + 
-  coord_equal() +
+  coord_equal() + 
+  theme(legend.direction = 'horizontal') +
+  guides(fill = guide_colorbar(ticks = FALSE)) +
+  ggtitle('Change in percent of households with contaminated drinking water (1998 to 2013)') +
+  coord_equal() + theme(legend.direction = 'horizontal') +
   scale_fill_gradientn(colours = rev(brewer.pal(9, 'RdYlBu')),
-                       limits = c(-0.9, 0.9)) +
-  theme(legend.position = 'none')
+                       limits = c(-0.9, 0.9))
+
+
+
+
 
 fileName = '~/Documents/USAID/Bangladesh/Training/Training docs/BGD_changeAs_choro.pdf'
 plotWidth = 5
