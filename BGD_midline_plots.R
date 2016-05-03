@@ -5,7 +5,8 @@ loadPkgs()
 source('~/GitHub/BangladeshTraining/BGD_midlineData.R')
 
 adm1 = adm1 %>% 
-  mutate(chgAs50 = meanAs50ppb.y - meanAs50ppb.x)
+  mutate(chgAs50 = meanAs50ppb.y - meanAs50ppb.x,
+         pctChg = abs(chgAs50 / meanAs50ppb.x))
 
 # Merge in pop data
 source('~/GitHub/BangladeshTraining/BGD_population.R')
@@ -28,9 +29,26 @@ bgStuntedAll = read.csv('~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSst
          stuntingYr = SurveyYear,
          denomStunted = DenominatorUnweighted)
 
+# Replicating data for Rajshahi / Rangpur split
+raj = bgStuntedAll %>% 
+  filter(div == 'Rajshahi/Rangpur',
+         stuntingYr < 2011) %>% 
+  mutate(div = 'Rajshahi')
+
+rangpur = bgStuntedAll %>% 
+  filter(div == 'Rajshahi/Rangpur', 
+         stuntingYr < 2011) %>% 
+  mutate(div = 'Rangpur')
+
+
+bgStuntedAll = rbind(bgStuntedAll, raj)
+bgStuntedAll = rbind(bgStuntedAll, rangpur) %>% 
+  filter(div != 'Rajshahi/Rangpur')
+
 bgStunted = read.csv('~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunting2014.csv') %>% 
   filter(SurveyYear == 2011,
-         CharacteristicLabel != 'Rajshahi/Rangpur') %>% 
+         
+         !CharacteristicLabel %in% c('Rajshahi/Rangpur', 'Total')) %>% 
   mutate(Value = Value /100,
          CharacteristicLabel = as.character(CharacteristicLabel),
          CharacteristicLabel = ifelse(str_detect(CharacteristicLabel, '\\.'),
@@ -141,6 +159,48 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(limits = c(1998, 2014),
                      breaks = c(1998, 2012))
+
+
+ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb.y,
+                 colour = div, fill = div, label = div)) +
+  geom_segment(data = adm1 %>% filter(!div %in% c('Rangpur', 'Rajshahi'))) +
+  geom_segment(linetype = 2,
+               colour = '#B983FF',
+               data = adm1 %>% filter(div %in% c('Rangpur', 'Rajshahi'))) +
+  geom_point(size = 3,             
+             shape = 21,
+             colour= grey90K) +
+  geom_segment(aes(x = 1998, xend = 1998, y = lb50ppb.x, yend = ub50ppb.x),
+               alpha = 0.4, size = 1.5) +
+  geom_segment(aes(x = 2012, xend = 2012, y = lb50ppb.y, yend = ub50ppb.y),
+               alpha = 0.4, size = 1.5) +
+  geom_point(aes(y = meanAs50ppb.x, x = 1998), 
+             colour= grey90K,
+             shape = 21,
+             size = 3) +
+  geom_label(nudge_x = 1, 
+             nudge_y = -0.055,
+             label.size = 0, fill = 'white',
+             family = 'Segoe UI Semilight', size = 4.5) + 
+  geom_label(aes(label = paste0(percent(pctChg, 0), ' percent change'),
+                 hjust = 1,
+                 nudge_x = 1, 
+             nudge_y = -0.055,
+             family = 'Segoe UI Semilight', size = 4.5)) + 
+  theme_ygrid() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_continuous(limits = c(1998, 2014),
+                     breaks = c(1998, 2012)) +
+  facet_wrap(~div)
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/arsenic_bump.pdf',
+       width = 0.8, height = 6,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 
 # [As] vs. contaminated ---------------------------------------------------
@@ -310,7 +370,8 @@ ggplot(adm1_long, aes(fill = pct,
                       y = indicator,
                       label = percent(pct, 0),
                       colour = colourVal)) +
-  scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu')) +
+  scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu'),
+                       limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
   geom_tile(colour = 'white', size = 0.5) +
   geom_text(size = 6, family = 'Segoe UI') +
   scale_color_identity() +
@@ -351,24 +412,71 @@ ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/heatmapPo
        dpi = 300)
 
 # money plots -------------------------------------------------------------
+widthMoney = 2.5
+colourMoney = '#33a02c'
 
 ggplot(adm1, aes(x = `total funding`, y = chgAs50)) +
-  geom_smooth(method='lm',formula=y~x, 
-              colour = 'dodgerblue', linetype = 2) + 
-  geom_point(size = 5) +
-  theme_xygridlight()
+  # geom_smooth(method='lm',formula=y~x, 
+  # colour = 'dodgerblue', linetype = 2) + 
+  geom_point(size = 5,
+             colour = colourMoney) +
+  theme_xygridlight() +
+  scale_y_continuous(labels = scales::percent,
+                     name = '') +
+  ggtitle('change in percent') +
+  coord_cartesian(xlim = c(0, 15)) +
+  xlab('total funding (millions USD)')
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_total.pdf',
+       width = widthMoney, height = widthMoney,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 ggplot(adm1, aes(x = funding_community_treatment, y = chgAs50)) +
-  geom_smooth(method='lm',formula=y~x, 
-              colour = 'dodgerblue', linetype = 2) + 
-  geom_point(size = 5) +
-  theme_xygridlight()
+  # geom_smooth(method='lm',formula=y~x, 
+              # colour = 'dodgerblue', linetype = 2) + 
+  geom_point(size = 5,
+             colour = colourMoney) +
+  theme_xygridlight() +
+  scale_y_continuous(labels = scales::percent,
+                     name = '') +
+  ggtitle('change in percent') +
+  coord_cartesian(xlim = c(0, 15)) +
+  xlab('community treatment funding (millions USD)')
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_community.pdf',
+       width = widthMoney, height = widthMoney,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 ggplot(adm1, aes(x = funding_filtration, y = chgAs50)) +
-  geom_smooth(method='lm',formula=y~x, 
-              colour = 'dodgerblue', linetype = 2) + 
-  geom_point(size = 5) +
-  theme_xygridlight()
+  # geom_smooth(method='lm',formula=y~x, 
+              # colour = 'dodgerblue', linetype = 2) + 
+  geom_point(size = 5,
+             colour = colourMoney) +
+  theme_xygridlight() +
+  scale_y_continuous(labels = scales::percent,
+                     name = '') +
+  ggtitle('change in percent') +
+  coord_cartesian(xlim = c(0, 15)) +
+  xlab('rainwater harvesting funding (millions USD)')
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_rainwater.pdf',
+       width = widthMoney, height = widthMoney,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 
 # sparklines: arsenic -----------------------------------------------------
@@ -376,7 +484,7 @@ adm1$div = factor(adm1$div,
                   levels = rev(orderHeat$div))
 
 ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb.y,
-                 colour = div, fill = div, label = div)) +
+                 colour = meanAs50ppb.y, fill = meanAs50ppb.y, label = div)) +
   geom_segment(data = adm1 %>% filter(!div %in% c('Rangpur', 'Rajshahi'))) +
   geom_segment(linetype = 2,
                colour = '#B983FF',
@@ -387,7 +495,7 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
   geom_segment(aes(x = 1998, xend = 1998, y = lb50ppb.x, yend = ub50ppb.x),
                alpha = 0.4, size = 1.5) +
   geom_segment(aes(x = 2012, xend = 2012, y = lb50ppb.y, yend = ub50ppb.y),
-               alpha = 0.4, size = 1.5) +
+               alpha = 0.7, size = 1.5) +
   geom_point(aes(y = meanAs50ppb.x, x = 1998), 
              colour= grey90K,
              shape = 21,
@@ -396,26 +504,97 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(limits = c(1998, 2014),
                      breaks = c(1998, 2012)) +
-  facet_wrap(~div, ncol = 1)
+  facet_wrap(~div, ncol = 1) +
+  scale_colour_gradientn(colours = brewer.pal(9, 'YlGnBu'),
+                         limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
+  scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu'),
+                         limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
+  facet_wrap(~div, ncol = 1) +
+  theme(axis.title = element_blank(),
+        axis.text.y = element_blank())
+        # rect = element_rect(fill = NA, colour = grey50K, size = NULL, linetype = 1),
+        # panel.border = element_rect(size = 0))
 
 
-
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/arsenic_sparks.pdf',
+       width = 0.8, height = 6,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 # sparklines: stunting ----------------------------------------------------
 
-ggplot(bgStuntedAll, aes(x = stuntingYr, y = stunting, 
-                      group = div,
-                      label = div)) +
-  geom_line(colour = grey40K) +
-  geom_point(colour = grey60K,
+bgStuntedPlot = bgStuntedAll %>% 
+  filter(stuntingYr < 2012)
+
+bgStunted2011 = bgStuntedPlot %>% 
+  filter(stuntingYr == 2011) %>% 
+  select(stunting2011 = stunting, div)
+
+bgStuntedTotal = bgStuntedPlot %>% 
+  filter(div == 'Total') %>% 
+  select(stuntingTotal = stunting, stuntingYr)
+
+bgStuntedPlot  = full_join(bgStunted2011, bgStuntedPlot)
+bgStuntedPlot  = full_join(bgStuntedTotal, bgStuntedPlot) %>% 
+  filter(div != 'Total')
+
+bgStuntedPlot$div = factor(bgStuntedPlot$div,
+                          levels = rev(orderHeat$div))
+
+widthLine = 0.35
+
+# -- Plot --
+
+ggplot(bgStuntedPlot, aes(colour = stunting2011,
+                          x = stuntingYr, y = stunting, 
+                          group = div,
+                          label = div)) +
+  # -- Country --
+  geom_line(aes(y = stuntingTotal),
+            size = widthLine,
+            colour = grey50K) +
+  geom_point(aes(y = stuntingTotal),
+             colour = 'white',
+             size = 4) +
+  geom_point(aes(y = stuntingTotal),
+             colour = grey50K,
              size = 2,
-             data = bgStunted %>% filter(stuntingYr == 2011)) +
-  geom_text(colour = grey60K,
-            family = 'Segoe UI Light', 
-            size = 4,
-            nudge_x = 0.2,
-            hjust = 0,
-            data = bgStunted %>% filter(stuntingYr == 2011)) +
-  theme_xygridlight() +
-  coord_cartesian(xlim = c(2004, 2016)) +
-  ggtitle('Stunting in Sylhet has increased in the past 5 years')
+             fill = 'white',
+             shape = 21) +
+  
+  # -- Regions --
+  geom_line(size = widthLine,
+    data = bgStuntedPlot %>% filter(stuntingYr < 2011 | !div %in% c('Rangpur','Rajshahi'))) +
+  geom_line(size = widthLine,
+    data = bgStuntedPlot %>% filter(div %in% c('Rangpur','Rajshahi')),
+    linetype = 2) +
+  geom_point(colour = 'white',
+             size = 3) +
+  geom_point(
+    size = 2,
+    fill = 'white',
+    shape = 21) +
+  geom_point(size = 2,
+             data = bgStuntedPlot %>% filter(stuntingYr == 2011)) +
+  theme_ygrid() +
+  coord_cartesian(xlim = c(2004, 2012)) +
+  scale_y_continuous(limits = c(0.3, 0.6),
+    breaks = seq(0.15, 0.75, by= 0.15)) +
+  scale_colour_gradientn(colours = brewer.pal(9, 'YlGnBu'),
+                         limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
+  facet_wrap(~div, ncol = 1) +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank())
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/stunting_sparks.pdf',
+       width = 0.8, height = 6,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)

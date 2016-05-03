@@ -104,7 +104,7 @@ kable(bgFiltered %>%
 # Stunting ----------------------------------------------------------------
 bgStunted = bgDHS2 %>% 
   filter(IndicatorId %in% c('CN_NUTS_C_HA2'),
-         CharacteristicCategory == 'Region') # Weighted # children in the last 5 y.
+         CharacteristicCategory %in% c('Region', 'Total')) # Weighted # children in the last 5 y.
 
 write.csv(bgStunted, '~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunting2014.csv')
 
