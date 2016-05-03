@@ -8,7 +8,7 @@ adm1 = adm1 %>%
   mutate(chgAs50 = meanAs50ppb.y - meanAs50ppb.x)
 
 # Merge in pop data
-source('BGD_population.R')
+source('~/GitHub/BangladeshTraining/BGD_population.R')
 
 pop2011 = pop %>% filter(year == 2011)
 
@@ -17,6 +17,17 @@ adm1_tidy = left_join(adm1_tidy, pop2011 %>% rename(yearPop = year), by = 'div')
 
 
 # Merge in stunting data
+bgStuntedAll = read.csv('~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunting2014.csv') %>% 
+  mutate(Value = Value /100,
+         CharacteristicLabel = as.character(CharacteristicLabel),
+         CharacteristicLabel = ifelse(str_detect(CharacteristicLabel, '\\.'),
+                                      str_replace_all(CharacteristicLabel, '\\.', ''),
+                                      CharacteristicLabel)) %>% 
+  select(div = CharacteristicLabel,
+         stunting = Value,
+         stuntingYr = SurveyYear,
+         denomStunted = DenominatorUnweighted)
+
 bgStunted = read.csv('~/Documents/USAID/Bangladesh/Training/dataout/BGD_DHSstunting2014.csv') %>% 
   filter(SurveyYear == 2011,
          CharacteristicLabel != 'Rajshahi/Rangpur') %>% 
@@ -284,14 +295,14 @@ adm1_long = adm1 %>%
 
 orderHeat = adm1_long %>% 
   filter(indicator == 'As > 10ppb') %>% 
-  arrange(desc(pct))
+  arrange((pct))
 
 adm1_long$div = factor(adm1_long$div,
                        levels = orderHeat$div)
 
 
 adm1_long$indicator = factor(adm1_long$indicator,
-                       levels = rev(c('As > 10ppb',
+                       levels = (c('As > 10ppb',
                                   'As > 50ppb','stunting')))
 
 ggplot(adm1_long, aes(fill = pct, 
@@ -303,8 +314,18 @@ ggplot(adm1_long, aes(fill = pct,
   geom_tile(colour = 'white', size = 0.5) +
   geom_text(size = 6, family = 'Segoe UI') +
   scale_color_identity() +
+  coord_flip() +
   theme_xylab()
 
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/heatmapAs.pdf',
+       width = 4., height = 6,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 adm1$div = factor(adm1$div,
                        levels = orderHeat$div)
@@ -317,7 +338,17 @@ ggplot(adm1, aes(fill = population,
   geom_tile(colour = 'white', size = 0.5) +
   geom_text(size = 6, family = 'Segoe UI') +
   scale_color_identity() +
-  theme_xylab()
+  theme_xylab() + 
+  coord_flip()
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/heatmapPop.pdf',
+       width = 1.75, height = 6,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 # money plots -------------------------------------------------------------
 
@@ -338,3 +369,53 @@ ggplot(adm1, aes(x = funding_filtration, y = chgAs50)) +
               colour = 'dodgerblue', linetype = 2) + 
   geom_point(size = 5) +
   theme_xygridlight()
+
+
+# sparklines: arsenic -----------------------------------------------------
+adm1$div = factor(adm1$div,
+                  levels = rev(orderHeat$div))
+
+ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb.y,
+                 colour = div, fill = div, label = div)) +
+  geom_segment(data = adm1 %>% filter(!div %in% c('Rangpur', 'Rajshahi'))) +
+  geom_segment(linetype = 2,
+               colour = '#B983FF',
+               data = adm1 %>% filter(div %in% c('Rangpur', 'Rajshahi'))) +
+  geom_point(size = 3,             
+             shape = 21,
+             colour= grey90K) +
+  geom_segment(aes(x = 1998, xend = 1998, y = lb50ppb.x, yend = ub50ppb.x),
+               alpha = 0.4, size = 1.5) +
+  geom_segment(aes(x = 2012, xend = 2012, y = lb50ppb.y, yend = ub50ppb.y),
+               alpha = 0.4, size = 1.5) +
+  geom_point(aes(y = meanAs50ppb.x, x = 1998), 
+             colour= grey90K,
+             shape = 21,
+             size = 3) +
+  theme_ygrid() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_continuous(limits = c(1998, 2014),
+                     breaks = c(1998, 2012)) +
+  facet_wrap(~div, ncol = 1)
+
+
+
+
+# sparklines: stunting ----------------------------------------------------
+
+ggplot(bgStuntedAll, aes(x = stuntingYr, y = stunting, 
+                      group = div,
+                      label = div)) +
+  geom_line(colour = grey40K) +
+  geom_point(colour = grey60K,
+             size = 2,
+             data = bgStunted %>% filter(stuntingYr == 2011)) +
+  geom_text(colour = grey60K,
+            family = 'Segoe UI Light', 
+            size = 4,
+            nudge_x = 0.2,
+            hjust = 0,
+            data = bgStunted %>% filter(stuntingYr == 2011)) +
+  theme_xygridlight() +
+  coord_cartesian(xlim = c(2004, 2016)) +
+  ggtitle('Stunting in Sylhet has increased in the past 5 years')
