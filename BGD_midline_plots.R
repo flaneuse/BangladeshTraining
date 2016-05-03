@@ -182,11 +182,10 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
              nudge_y = -0.055,
              label.size = 0, fill = 'white',
              family = 'Segoe UI Semilight', size = 4.5) + 
-  geom_label(aes(label = paste0(percent(pctChg, 0), ' percent change'),
+  geom_text(aes(label = paste0(percent(pctChg, 0)),
                  hjust = 1,
                  nudge_x = 1, 
-             nudge_y = -0.055,
-             family = 'Segoe UI Semilight', size = 4.5)) + 
+                 family = 'Segoe UI Semilight', size = 4.5)) + 
   theme_ygrid() +
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(limits = c(1998, 2014),
