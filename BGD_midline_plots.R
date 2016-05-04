@@ -64,7 +64,9 @@ money = read_excel('~/GitHub/BangladeshTraining/BGD_midlinedata.xlsx',
                    sheet = 1) %>% 
   filter(division != 'All Bangladesh') %>% 
   filter(year =='1998/1999') %>% 
-  select(division, contains('funding'))
+  select(division, contains('funding')) %>% 
+  mutate(funding_SBC = 10/7,
+         `total funding` = funding_SBC + funding_filtration + funding_community_treatment)
 
 adm1 = left_join(adm1, bgStunted, by = 'div')
 
@@ -193,7 +195,7 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
   facet_wrap(~div)
 
 ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/arsenic_bump.pdf',
-       width = 0.8, height = 6,
+       width = 7, height = 5,
        bg = 'transparent',
        paper = 'special',
        units = 'in',
@@ -387,6 +389,55 @@ ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/heatmapAs
        compress = FALSE,
        dpi = 300)
 
+# heatmap -----------------------------------------------------------------
+adm1_long = adm1 %>% 
+  select(`As > 50ppb` = meanAs50ppb.y, 
+         `As > 10ppb` = meanAs10ppb.y, 
+         stunting, 
+         div) %>% 
+  gather(indicator, pct, -div) %>% 
+  mutate(colourVal = ifelse(pct > mean(pct),
+                            'white', grey90K))
+
+orderHeat = adm1_long %>% 
+  filter(indicator == 'As > 10ppb') %>% 
+  arrange((pct))
+
+adm1_long$div = factor(adm1_long$div,
+                       levels = orderHeat$div)
+
+
+adm1_long$indicator = factor(adm1_long$indicator,
+                             levels = (c('As > 10ppb',
+                                         'As > 50ppb','stunting')))
+
+ggplot(adm1_long, aes(fill = pct, 
+                      x = div,
+                      y = indicator,
+                      label = percent(pct, 0),
+                      colour = colourVal)) +
+  scale_fill_gradientn(colours = brewer.pal(9, 'RdPu'),
+                       limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
+  geom_tile(colour = 'white', size = 0.5) +
+  geom_text(size = 6, family = 'Segoe UI') +
+  scale_color_identity() +
+  coord_flip() +
+  theme_xylab()
+
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/heatmapAs_pink.pdf',
+       width = 4., height = 6,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
+
+
+# heatmap - pop -----------------------------------------------------------
+
+
 adm1$div = factor(adm1$div,
                        levels = orderHeat$div)
 
@@ -414,11 +465,20 @@ ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/heatmapPo
 widthMoney = 2.5
 colourMoney = '#33a02c'
 
-ggplot(adm1, aes(x = `total funding`, y = chgAs50)) +
-  # geom_smooth(method='lm',formula=y~x, 
-  # colour = 'dodgerblue', linetype = 2) + 
-  geom_point(size = 5,
-             colour = colourMoney) +
+ggplot(adm1, aes(x = `total funding`, 
+                 y = chgAs50,
+                 colour = `total funding`,
+                 label = div)) +
+  geom_smooth(colour = grey75K, 
+              fill = NA,
+              size = 0.5,
+              linetype = 2) +
+  geom_point(size = 5) +
+  geom_text(size = 5, 
+            nudge_x = 1,
+            hjust = 0,
+            family = 'Segoe UI Semilight') +
+  scale_colour_gradientn(colours = brewer.pal(9, 'YlGn')[3:8]) +
   theme_xygridlight() +
   scale_y_continuous(labels = scales::percent,
                      name = '') +
@@ -435,11 +495,20 @@ ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_t
        compress = FALSE,
        dpi = 300)
 
-ggplot(adm1, aes(x = funding_community_treatment, y = chgAs50)) +
-  # geom_smooth(method='lm',formula=y~x, 
-              # colour = 'dodgerblue', linetype = 2) + 
-  geom_point(size = 5,
-             colour = colourMoney) +
+ggplot(adm1, aes(x = funding_community_treatment, 
+                 y = chgAs50,
+                 label = div,
+                 colour = `total funding`)) +
+  geom_smooth(colour = grey75K, 
+              fill = NA,
+              size = 0.5,
+              linetype = 2) +
+  geom_point(size = 5) +
+  geom_text(size = 5, 
+            nudge_x = 1,
+            hjust = 0,
+            family = 'Segoe UI Semilight') +
+  scale_colour_gradientn(colours = brewer.pal(9, 'YlGn')[3:8]) +
   theme_xygridlight() +
   scale_y_continuous(labels = scales::percent,
                      name = '') +
@@ -456,11 +525,19 @@ ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_c
        compress = FALSE,
        dpi = 300)
 
-ggplot(adm1, aes(x = funding_filtration, y = chgAs50)) +
-  # geom_smooth(method='lm',formula=y~x, 
-              # colour = 'dodgerblue', linetype = 2) + 
-  geom_point(size = 5,
-             colour = colourMoney) +
+ggplot(adm1, aes(x = funding_filtration, y = chgAs50,
+                 colour = `total funding`,
+                 label = div)) +
+  geom_smooth(colour = grey75K, 
+              fill = NA,
+              size = 0.5,
+              linetype = 2) +
+  geom_point(size = 5) +
+  geom_text(size = 5, 
+            nudge_x = 1,
+            hjust = 0,
+            family = 'Segoe UI Semilight') +
+  scale_colour_gradientn(colours = brewer.pal(9, 'YlGn')[3:8]) +
   theme_xygridlight() +
   scale_y_continuous(labels = scales::percent,
                      name = '') +
@@ -483,7 +560,7 @@ adm1$div = factor(adm1$div,
                   levels = rev(orderHeat$div))
 
 ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb.y,
-                 colour = meanAs50ppb.y, fill = meanAs50ppb.y, label = div)) +
+                 colour = meanAs50ppb.y, fill = meanAs50ppb.y)) +
   geom_segment(data = adm1 %>% filter(!div %in% c('Rangpur', 'Rajshahi'))) +
   geom_segment(linetype = 2,
                colour = '#B983FF',
@@ -509,6 +586,16 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
   scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu'),
                          limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
   facet_wrap(~div, ncol = 1) +
+  geom_text(aes(y = meanAs50ppb.x,
+                x = 1998,
+                label = percent(meanAs50ppb.x)),
+    size = 3.5,
+            family = 'Segoe UI Light',
+            nudge_y  = 0.09) +
+  geom_text(aes(label = percent(meanAs50ppb.y)),
+            size = 3.5,
+            family = 'Segoe UI Light',
+            nudge_y  = 0.09) +
   theme(axis.title = element_blank(),
         axis.text.y = element_blank())
         # rect = element_rect(fill = NA, colour = grey50K, size = NULL, linetype = 1),
@@ -551,19 +638,19 @@ widthLine = 0.35
 ggplot(bgStuntedPlot, aes(colour = stunting2011,
                           x = stuntingYr, y = stunting, 
                           group = div,
-                          label = div)) +
-  # -- Country --
-  geom_line(aes(y = stuntingTotal),
-            size = widthLine,
-            colour = grey50K) +
-  geom_point(aes(y = stuntingTotal),
-             colour = 'white',
-             size = 4) +
-  geom_point(aes(y = stuntingTotal),
-             colour = grey50K,
-             size = 2,
-             fill = 'white',
-             shape = 21) +
+                          label = percent(stunting))) +
+  # # -- Country --
+  # geom_line(aes(y = stuntingTotal),
+  #           size = widthLine,
+  #           colour = grey50K) +
+  # geom_point(aes(y = stuntingTotal),
+  #            colour = 'white',
+  #            size = 4) +
+  # geom_point(aes(y = stuntingTotal),
+  #            colour = grey50K,
+  #            size = 3,
+  #            fill = 'white',
+  #            shape = 21) +
   
   # -- Regions --
   geom_line(size = widthLine,
@@ -572,18 +659,22 @@ ggplot(bgStuntedPlot, aes(colour = stunting2011,
     data = bgStuntedPlot %>% filter(div %in% c('Rangpur','Rajshahi')),
     linetype = 2) +
   geom_point(colour = 'white',
-             size = 3) +
+             size = 4) +
   geom_point(
-    size = 2,
+    size = 3,
     fill = 'white',
     shape = 21) +
-  geom_point(size = 2,
+  geom_point(size = 3,
              data = bgStuntedPlot %>% filter(stuntingYr == 2011)) +
+  # -- Labels --
+  geom_text(size = 3.5,
+            family = 'Segoe UI Light',
+            nudge_y  = 0.09) +
   theme_ygrid() +
   coord_cartesian(xlim = c(2004, 2012)) +
   scale_y_continuous(limits = c(0.3, 0.6),
     breaks = seq(0.15, 0.75, by= 0.15)) +
-  scale_colour_gradientn(colours = brewer.pal(9, 'YlGnBu'),
+  scale_colour_gradientn(colours = brewer.pal(9, 'RdPu'),
                          limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
   facet_wrap(~div, ncol = 1) +
   theme(axis.title = element_blank(),
@@ -597,3 +688,18 @@ ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/stunting_
        useDingbats=FALSE,
        compress = FALSE,
        dpi = 300)
+
+
+
+
+# colors for money --------------------------------------------------------
+moneyTidy = data.frame(x = unique(c(money$funding_community_treatment, money$funding_filtration, money$`total funding`)))
+
+moneyTidy = moneyTidy %>% filter(x !=0)
+ggplot(moneyTidy, aes(x = x, y = 1, colour = x)) +
+  geom_point(size = 25) +
+  scale_colour_gradientn(colours = brewer.pal(9, 'YlGn')[3:8],
+                         breaks = seq(0,20, by = 5)) +
+  theme_basic() +
+  theme(legend.position = 'left')
+
