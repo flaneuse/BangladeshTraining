@@ -481,9 +481,10 @@ ggplot(adm1, aes(x = `total funding`,
   scale_colour_gradientn(colours = brewer.pal(9, 'YlGn')[3:8]) +
   theme_xygridlight() +
   scale_y_continuous(labels = scales::percent,
+                     breaks = c(-0.4, -0.2, 0),
                      name = '') +
   ggtitle('change in percent') +
-  coord_cartesian(xlim = c(0, 15)) +
+  coord_cartesian(xlim = c(0, 18), ylim = c(-0.4, 0)) +
   xlab('total funding (millions USD)')
 
 ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_total.pdf',
@@ -511,9 +512,10 @@ ggplot(adm1, aes(x = funding_community_treatment,
   scale_colour_gradientn(colours = brewer.pal(9, 'YlGn')[3:8]) +
   theme_xygridlight() +
   scale_y_continuous(labels = scales::percent,
+                     breaks = c(-0.4, -0.2, 0),
                      name = '') +
   ggtitle('change in percent') +
-  coord_cartesian(xlim = c(0, 15)) +
+  coord_cartesian(xlim = c(0, 18), ylim = c(-0.4, 0)) +
   xlab('community treatment funding (millions USD)')
 
 ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_community.pdf',
@@ -540,9 +542,10 @@ ggplot(adm1, aes(x = funding_filtration, y = chgAs50,
   scale_colour_gradientn(colours = brewer.pal(9, 'YlGn')[3:8]) +
   theme_xygridlight() +
   scale_y_continuous(labels = scales::percent,
+                     breaks = c(-0.4, -0.2, 0),
                      name = '') +
   ggtitle('change in percent') +
-  coord_cartesian(xlim = c(0, 15)) +
+  coord_cartesian(xlim = c(0, 18), ylim = c(-0.4, 0)) +
   xlab('rainwater harvesting funding (millions USD)')
 
 ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/funding_rainwater.pdf',
