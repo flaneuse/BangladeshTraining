@@ -180,19 +180,23 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
              colour= grey90K,
              shape = 21,
              size = 3) +
-  geom_label(nudge_x = 1, 
-             nudge_y = -0.055,
-             label.size = 0, fill = 'white',
-             family = 'Segoe UI Semilight', size = 4.5) + 
-  geom_text(aes(label = paste0(percent(pctChg, 0)),
-                 hjust = 1,
-                 nudge_x = 1, 
-                 family = 'Segoe UI Semilight', size = 4.5)) + 
+  geom_text(aes(label = paste0(percent(meanAs50ppb.y, 0)),
+                hjust = 1,
+                nudge_y = 0.07, 
+                family = 'Segoe UI Semilight', size = 4.5)) + 
+  geom_text(aes(label = paste0(percent(meanAs50ppb.x, 0)),
+                x = 1998,
+                y = meanAs50ppb.x),
+            hjust = 1,
+            nudge_x = 1, 
+            family = 'Segoe UI Semilight', size = 4.5) + 
   theme_ygrid() +
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(limits = c(1998, 2014),
                      breaks = c(1998, 2012)) +
-  facet_wrap(~div)
+  facet_wrap(~div) +
+  ylab('') +
+  ggtitle('Household-level arsenic decreased')
 
 ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/arsenic_bump.pdf',
        width = 7, height = 5,
@@ -340,9 +344,19 @@ ggplot(adm1, aes(x = meanAs50ppb.y,
                      name = 'stunted children',
                      limits = c(0, 0.52)) +
   scale_size(range = c(3, 20)) +
-  theme_xygridlight() +
-  ggtitle('2011 - 2013 data')
+  theme_xygrid() +
+  ggtitle('Stunting is high across the country and shows little relationship to arsenic contamination') +
+  theme(legend.position = 'left')
 
+
+ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/arsenic_stunting.pdf',
+       width = 10, height = 6,
+       bg = 'transparent',
+       paper = 'special',
+       units = 'in',
+       useDingbats=FALSE,
+       compress = FALSE,
+       dpi = 300)
 
 # heatmap -----------------------------------------------------------------
 adm1_long = adm1 %>% 
@@ -363,8 +377,8 @@ adm1_long$div = factor(adm1_long$div,
 
 
 adm1_long$indicator = factor(adm1_long$indicator,
-                       levels = (c('As > 10ppb',
-                                  'As > 50ppb','stunting')))
+                             levels = (c('As > 10ppb',
+                                         'As > 50ppb','stunting')))
 
 ggplot(adm1_long, aes(fill = pct, 
                       x = div,
@@ -439,12 +453,12 @@ ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/heatmapAs
 
 
 adm1$div = factor(adm1$div,
-                       levels = orderHeat$div)
+                  levels = orderHeat$div)
 
 ggplot(adm1, aes(fill = population, 
-                      x = div,
-                      y = 1,
-                      label = paste0(round(population/1e6,1), ' M'))) +
+                 x = div,
+                 y = 1,
+                 label = paste0(round(population/1e6,1), ' M'))) +
   scale_fill_gradient(low = grey25K, high = grey90K) +
   geom_tile(colour = 'white', size = 0.5) +
   geom_text(size = 6, family = 'Segoe UI') +
@@ -587,12 +601,12 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
   scale_colour_gradientn(colours = brewer.pal(9, 'YlGnBu'),
                          limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
   scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu'),
-                         limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
+                       limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
   facet_wrap(~div, ncol = 1) +
   geom_text(aes(y = meanAs50ppb.x,
                 x = 1998,
                 label = percent(meanAs50ppb.x)),
-    size = 3.5,
+            size = 3.5,
             family = 'Segoe UI Light',
             nudge_y  = 0.09) +
   geom_text(aes(label = percent(meanAs50ppb.y)),
@@ -601,8 +615,8 @@ ggplot(adm1, aes(xend =  1998, x = 2012, yend = meanAs50ppb.x, y =   meanAs50ppb
             nudge_y  = 0.09) +
   theme(axis.title = element_blank(),
         axis.text.y = element_blank())
-        # rect = element_rect(fill = NA, colour = grey50K, size = NULL, linetype = 1),
-        # panel.border = element_rect(size = 0))
+# rect = element_rect(fill = NA, colour = grey50K, size = NULL, linetype = 1),
+# panel.border = element_rect(size = 0))
 
 
 ggsave(filename = '~/Documents/USAID/Bangladesh/Training/Training docs/arsenic_sparks.pdf',
@@ -632,7 +646,7 @@ bgStuntedPlot  = full_join(bgStuntedTotal, bgStuntedPlot) %>%
   filter(div != 'Total')
 
 bgStuntedPlot$div = factor(bgStuntedPlot$div,
-                          levels = rev(orderHeat$div))
+                           levels = rev(orderHeat$div))
 
 widthLine = 0.35
 
@@ -653,14 +667,14 @@ ggplot(bgStuntedPlot, aes(colour = stunting2011,
   #            colour = grey50K,
   #            size = 3,
   #            fill = 'white',
-  #            shape = 21) +
-  
-  # -- Regions --
+#            shape = 21) +
+
+# -- Regions --
+geom_line(size = widthLine,
+          data = bgStuntedPlot %>% filter(stuntingYr < 2011 | !div %in% c('Rangpur','Rajshahi'))) +
   geom_line(size = widthLine,
-    data = bgStuntedPlot %>% filter(stuntingYr < 2011 | !div %in% c('Rangpur','Rajshahi'))) +
-  geom_line(size = widthLine,
-    data = bgStuntedPlot %>% filter(div %in% c('Rangpur','Rajshahi')),
-    linetype = 2) +
+            data = bgStuntedPlot %>% filter(div %in% c('Rangpur','Rajshahi')),
+            linetype = 2) +
   geom_point(colour = 'white',
              size = 4) +
   geom_point(
@@ -676,7 +690,7 @@ ggplot(bgStuntedPlot, aes(colour = stunting2011,
   theme_ygrid() +
   coord_cartesian(xlim = c(2004, 2012)) +
   scale_y_continuous(limits = c(0.3, 0.6),
-    breaks = seq(0.15, 0.75, by= 0.15)) +
+                     breaks = seq(0.15, 0.75, by= 0.15)) +
   scale_colour_gradientn(colours = brewer.pal(9, 'RdPu'),
                          limits = c(min(adm1_long$pct), max(adm1_long$pct))) +
   facet_wrap(~div, ncol = 1) +
